@@ -1,0 +1,9 @@
+@port = 8000
+@host = http://localhost:{{port}}
+
+### No multithreading, single request at a time
+GET {{host}}/data
+
+
+### Multithreading enabled, multiple requests at a time
+GET {{host}}/data
