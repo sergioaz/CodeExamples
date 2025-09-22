@@ -1,7 +1,8 @@
 import os
-
+from dotenv import load_dotenv
 from openai import OpenAI
-os.environ["OPENAI_API_KEY"] = "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"
+
+load_dotenv()
 client = OpenAI()
 
 response = client.responses.create(

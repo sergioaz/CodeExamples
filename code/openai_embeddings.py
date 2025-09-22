@@ -1,7 +1,9 @@
 import os
 import requests
+from dotenv import load_dotenv
 
-os.environ["OPENAI_API_KEY"] = "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"
+
+load_dotenv()
 api_key = os.environ["OPENAI_API_KEY"]
 
 try:
