@@ -62,128 +62,101 @@ def solution(Number_of_keys: int, Start_position_of_gold_key: int, Length_of_seq
     return "Draw"
 
 
-def solution_with_game_theory(Number_of_keys: int, Start_position_of_gold_key: int, Length_of_seq: int, Winning_Position: int) -> str:
-    """
-    Alternative solution using game theory - determines winner/draw by analyzing all reachable positions
-    and their winning/losing states.
-    """
-    
-    # Convert to 0-indexed
-    start_pos = Start_position_of_gold_key - 1
-    target_pos = Winning_Position - 1
-    n = Number_of_keys
-    k = Length_of_seq
-    
-    if start_pos == target_pos:
-        return "player_one"
-    
-    # Find all reachable positions from start
-    def get_reachable_positions():
-        visited = set()
-        queue = [start_pos]
-        visited.add(start_pos)
-        reachable = {start_pos}
-        
-        while queue:
-            pos = queue.pop(0)
-            
-            # Try all possible sequences of length k that include current position
-            for seq_start in range(max(0, pos - k + 1), min(n - k + 1, pos + 1)):
-                # After reversing sequence [seq_start, seq_start+k), 
-                # element at pos will move to position: seq_start + (seq_start + k - 1 - pos)
-                new_pos = seq_start + (seq_start + k - 1 - pos)
-                
-                if 0 <= new_pos < n and new_pos not in visited:
-                    visited.add(new_pos)
-                    reachable.add(new_pos)
-                    queue.append(new_pos)
-        
-        return reachable
-    
-    reachable = get_reachable_positions()
-    
-    # If target is not reachable, it's a draw
-    if target_pos not in reachable:
+
+def solution2(Number_of_keys: int, Start_position_of_gold_key: int, Length_of_seq: int, Winning_Position: int) -> str:
+
+    # check conditions
+    if (Length_of_seq > Number_of_keys) or (Start_position_of_gold_key > Number_of_keys) or (Winning_Position > Number_of_keys):
         return "Draw"
-    
-    # Build transition graph
-    transitions = {}
-    for pos in reachable:
-        transitions[pos] = set()
-        for seq_start in range(max(0, pos - k + 1), min(n - k + 1, pos + 1)):
-            new_pos = seq_start + (seq_start + k - 1 - pos)
-            if 0 <= new_pos < n and new_pos in reachable:
-                transitions[pos].add(new_pos)
-    
-    # Use dynamic programming to determine winning/losing positions
-    # winning[pos] = True if current player can force a win from position pos
-    winning = {}
-    
-    def can_win(pos, memo=None):
-        if memo is None:
-            memo = {}
-        
-        if pos in memo:
-            return memo[pos]
-        
-        if pos == target_pos:
-            memo[pos] = True
-            return True
-        
-        # If any move leads to a losing position for opponent, current player wins
-        for next_pos in transitions[pos]:
-            if not can_win(next_pos, memo):
-                memo[pos] = True
-                return True
-        
-        # If all moves lead to winning positions for opponent, current player loses
-        memo[pos] = False
-        return False
-    
-    # Check if player one can win from start position
-    if can_win(start_pos):
+
+    if Winning_Position < Start_position_of_gold_key:
+        # swap positions - game is symmetrical
+        Start_position_of_gold_key, Winning_Position = Number_of_keys - Start_position_of_gold_key, Number_of_keys - Start_position_of_gold_key
+
+    res = check_win(Number_of_keys, Start_position_of_gold_key, Length_of_seq, Winning_Position)
+    if res:
         return "player_one"
+
+    # check if player 1 has 2 moves - then he cannot lose
+    if has_two_moves(Number_of_keys, Start_position_of_gold_key, Length_of_seq):
+        return "Draw"
+
+    # find all possible positions after reverses
+    current_position_array  = arr_positions = [Start_position_of_gold_key + Length_of_seq - i * 2 + 1 for i in range(1, (Length_of_seq // 2) +1 ) ]
+    for current_position in current_position_array:
+
+         if not check_win (Number_of_keys, current_position, Length_of_seq, Winning_Position):
+             # if there is a position that is not winnable by player 2 on next move, player one can go back indefinitely
+             return "Draw"
+
+    return "player_two"
+
+
+
+def check_win(Number_of_keys: int, current_position: int, Length_of_seq: int, Winning_Position: int):
+    """
+    check if this position is winnable right now:
+    """
+
+    # option one: already on position, or can jump right to position
+    if (current_position == Winning_Position) or (current_position + Length_of_seq - 1) == Winning_Position:
+        return True
+
+    # option two: do reverses
+    arr_positions = [current_position + Length_of_seq - i * 2 + 1 for i in range(1, (Length_of_seq // 2) +1 ) ]
+    if Winning_Position in arr_positions:
+        return True
+
+    return False
+
+
+
+
+def has_two_moves(Number_of_keys: int, current_position: int, Length_of_seq: int) -> bool:
+    """
+    Check if player can move right and left
+    :param Number_of_keys: 
+    :param current_position: 
+    :param Length_of_seq: 
+    :return: 
+    """
+    if ((current_position + Length_of_seq - 1) <= Number_of_keys) or ((current_position - Length_of_seq + 1) > 0):
+        return True
     else:
-        # Check if the game can reach a cycle without reaching target
-        # If so, it might be a draw
-        
-        # Simple check: if we can't win but target is reachable, 
-        # player two has advantage
-        return "player_two"
+        return False
 
 
 # Test the function with some examples
 if __name__ == "__main__":
 
     # Test case 0: Gold key at position 1, need to get to position 4, can reverse 2 keys
-    result0 = solution(4, 1, 2, 4)
-    print(f"Test 0 - Keys: 4, Gold at: 1, Sequence length: 2, Target: 4 -> Winner: {result0}")
+    result0 = solution2(4, 1, 2, 4)
+    print(f"Solution 2, Test 0 - Keys: 4, Gold at: 1, Sequence length: 2, Target: 4 -> Winner: {result0}")
 
-    result0 = solution_with_game_theory(4, 1, 2, 4)
-    print(f"Test 0 - Keys: 4, Gold at: 1, Sequence length: 2, Target: 4 -> Winner: {result0}")
+    #result0 = solution_with_game_theory(4, 1, 2, 4)
+    #print(f"Test 0 - Keys: 4, Gold at: 1, Sequence length: 2, Target: 4 -> Winner: {result0}")
 
-    exit (0)
 
     # Test case 1: Gold key at position 1, need to get to position 5, can reverse 3 keys
-    result1 = solution(10, 1, 3, 5)
+    result1 = solution2(10, 1, 3, 5)
     print(f"Test 1 - Keys: 10, Gold at: 1, Sequence length: 3, Target: 5 -> Winner: {result1}")
     
     # Test case 2: Gold key at position 5, need to get to position 1, can reverse 4 keys  
-    result2 = solution(8, 5, 4, 1)
+    result2 = solution2(8, 5, 4, 1)
     print(f"Test 2 - Keys: 8, Gold at: 5, Sequence length: 4, Target: 1 -> Winner: {result2}")
     
     # Test case 3: Gold key already at target
-    result3 = solution(6, 3, 2, 3)
+    result3 = solution2(6, 3, 2, 3)
     print(f"Test 3 - Keys: 6, Gold at: 3, Sequence length: 2, Target: 3 -> Winner: {result3}")
     
     # Test case 4: Simple case
-    result4 = solution(5, 2, 3, 4)
+    result4 = solution2(5, 2, 3, 4)
     print(f"Test 4 - Keys: 5, Gold at: 2, Sequence length: 3, Target: 4 -> Winner: {result4}")
     
     # Test case 5: Potential draw scenario - target unreachable
-    result5 = solution(4, 1, 2, 4)
+    result5 = solution2(4, 1, 2, 4)
     print(f"Test 5 - Keys: 4, Gold at: 1, Sequence length: 2, Target: 4 -> Winner: {result5}")
     
     # Test case 6: Another potential draw scenario
-    result6 = solution(3, 1, 1, 3)  # Can only reverse 1 key at a time
+    result6 = solution2(3, 1, 1, 3)  # Can only reverse 1 key at a time
     print(f"Test 6 - Keys: 3, Gold at: 1, Sequence length: 1, Target: 3 -> Winner: {result6}")
