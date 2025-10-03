@@ -45,6 +45,10 @@ def is_prime_optimized(n): # The new, fast function
 
 def count_primes(limit):
     # Note: We now use the optimized function for the actual work.
+    return sum(1 for i in range(limit) if is_prime(i))
+
+def count_primes_optimized(limit):
+    # Note: We now use the optimized function for the actual work.
     return sum(1 for i in range(limit) if is_prime_optimized(i))
 
 cProfile.run("count_primes(5000)")
