@@ -15,4 +15,5 @@ dependencies = [
     "pyzmq>=27.1.0",
     "requests>=2.32.5",
     "schedule>=1.2.2",
+    "snoop>=0.6.0",
 ]
