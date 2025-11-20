@@ -1,5 +1,8 @@
 """
-Example of snoop usage
+Example of snoop usage - Snoop is a simple and powerful debugger for Python letting you to trace:
+- function calls and returns,
+- executed lines,
+- local variable values and changes.
 """
 from snoop import snoop
 
