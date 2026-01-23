@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 """
 squared = list(map(lambda x: x ** 2, range(5)))
 squared = list(lambda x: x ** 2, range(5))

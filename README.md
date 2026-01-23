@@ -4,14 +4,16 @@ A curated collection of Python code examples demonstrating practical programming
 
 ## 🌟 What's Inside
 
-This repository contains **40+ Python examples** covering:
+This repository contains **56+ Python examples** covering:
 
 - **Performance Comparisons** - See how different libraries and approaches stack up
 - **Algorithm Implementations** - Classic data structures and algorithms
-- **Web Development** - FastAPI, async programming, and HTTP patterns
+- **Async Programming** - Concurrency, event loops, and async patterns
+- **Web Development** - FastAPI, HTMX, and HTTP patterns
 - **Database Integration** - MongoDB, embeddings, and data processing
 - **Advanced Python** - Context managers, generators, decorators, and more
 - **External APIs** - Authentication, web scraping, and service integration
+- **Miscellaneous** - Utilities, debugging, profiling, and fun examples
 
 ## 🚀 Getting Started
 
@@ -208,28 +210,63 @@ def fast_sum(long long[:] arr):
 - `merge_intervals.py` - Interval merging algorithm
 - `get_duplicates.py` - Duplicate detection using Counter
 - `prime_numbers.py` - Prime number generation
+- `pairs_with_difference.py` - Count pairs with target difference
+- `key_game.py` - Game theory algorithm (BFS search)
+
+### 🧵 Async Programming
+- `async_threads.py` - Concurrent request handling with FastAPI
+- `async_add_callback_example.py` - Task exception handling with callbacks
+- `async_event_bus.py` - Event bus pattern for async communication
+- `async_exceptions.py` - Proper exception handling in async tasks
+- `async_logger.py` - Non-blocking logging with QueueHandler
+- `async_shutdown.py` - Signal handling for graceful shutdowns
+- `non_blocking_scheduler.py` - Schedule jobs with threading
 
 ### 🌐 Web Development
 - `fastapi_dependency_injection.py` - Clean DI patterns
-- `fastapi_htmx.py` - Modern web interfaces
-- `async_threads.py` - Concurrent request handling
-- `capture_headers.py` - HTTP header processing
+- `fastapi_htmx.py` - Modern web interfaces with HTMX
+- `capture_headers.py` - HTTP header capture with Playwright
+- `chrome_headers.py` - Chrome header examples
+- `login_to_upwork.py` - Browser automation with Playwright
 
-### 🔧 Python Patterns & Best Practices  
-- `context_manager_*.py` - Custom context managers
+### 🔧 Python Patterns & Best Practices
+- `context_manager_*.py` - Custom context managers (throttle, lock, stack)
 - `iterator_generator.py` - Memory-efficient file processing
 - `enums_examples.py` - Clean enum usage
-- `patterns_usage.py` - Design pattern implementations
-- `logging_with_extra_parameter.py` - Advanced logging
+- `patterns_usage.py` - Design pattern implementations (Strategy, Observer, Factory, Command)
+- `logging_with_extra_parameter.py` - Advanced logging with extra fields
+- `deprecate_decorator.py` - Deprecation warning decorator
+- `normalize_unicode.py` - Unicode normalization (NFKC)
 
 ### 🛡️ Security & Authentication
-- `password_hash.py` - Secure password handling
-- `auth_by_pyseto.py` - Modern token authentication
+- `password_hash.py` - Secure password handling with PBKDF2
+- `auth_by_pyseto.py` - Modern token authentication with PASETO
+- `regex_safe_example.py` - ReDoS attack prevention
 
 ### 🗄️ Database & APIs
-- `openai_embeddings.py` - Vector search with MongoDB
+- `openai_embeddings.py` - Vector search with MongoDB + OpenAI
+- `openai_first_test.py` - OpenAI API basics
 - `mongo_shard.py` - MongoDB operations
-- `get_youtube_transcript.py` - API integration
+- `get_youtube_transcript.py` - YouTube API integration
+
+### 🧪 Core Python & Utilities
+- `core_python.py` - 27 examples covering 9 core topics (dicts, I/O, functions, classes, etc.)
+- `bisect_example.py` - Binary search with bisect module
+- `rate_limiter.py` - Rate limiting per user
+- `sampler.py` - Reservoir sampling algorithm
+- `parallel_test.py` - ThreadPool vs ProcessPool comparison
+- `pydant_attrgetter.py` - Pydantic + attrgetter sorting
+- `pydantic_setting_for_config.py` - Pydantic settings management
+- `pyjokes_example.py` - Fun examples with pyjokes, pyfiglet, cowsay
+- `snoop_example.py` - Debugging with snoop
+- `profiling.py` - Profiling with cProfile
+- `tqdm_progress_bar.py` - Progress bars with tqdm
+- `process_mushroom_image.py` - Image processing with CLIP
+- `databrick.py` - PySpark example
+- `airflow_example_not_working.py` - Airflow example (marked as not working)
+- `Pool_everything.py` - Pool operations
+- `REquestCoalescer.py` - Request coalescing pattern
+- `ZeroMQ_pub.py` / `ZeroMQ_sub.py` - ZeroMQ pub/sub messaging
 
 ## 🎯 Learning Paths
 
@@ -289,21 +326,101 @@ python code/login_to_upwork.py
 
 ## 📦 Dependencies
 
-Most examples are self-contained, but some may require:
-
+### Core Dependencies (Already in pyproject.toml)
 ```bash
-# For performance examples
+# Install all core dependencies
+pip install asyncpg dotenv httpx openai pandas pymongo pytest pyzmq requests schedule snoop
+```
+
+### Category-Specific Dependencies
+
+#### 🔧 Async Programming
+```bash
+pip install schedule  # Already in pyproject.toml
+```
+
+#### 🌐 Web Development
+```bash
+pip install fastapi uvicorn starlette playwright
+# Note: playwright requires additional setup:
+# playwright install chromium
+```
+
+#### 🗄️ Database & APIs
+```bash
+pip install pymongo requests openai  # Already in pyproject.toml
+pip install youtube-transcript-api  # For get_youtube_transcript.py
+```
+
+#### 🏎️ Performance & Optimization
+```bash
+pip install orjson numexpr numpy
+```
+
+#### 🔧 Python Patterns & Best Practices
+```bash
+pip install pyseto babel cython pydantic pydantic-settings patterns pytterns
+```
+
+#### 🛡️ Security
+```bash
+pip install pyseto  # For auth_by_pyseto.py
+```
+
+#### 🧪 Core Python & Utilities
+```bash
+# For debugging
+pip install snoop  # Already in pyproject.toml
+
+# For progress bars
+pip install tqdm
+
+# For fun examples
+pip install pyjokes pyfiglet cowsay
+
+# For image processing
+pip install clip torch pillow
+
+# For ZeroMQ
+pip install pyzmq  # Already in pyproject.toml
+
+# For PySpark
+pip install pyspark
+
+# For Cython examples
+pip install cython numpy
+```
+
+### Quick Install Commands
+```bash
+# Install everything (recommended for exploration)
+pip install orjson numexpr numpy fastapi uvicorn starlette playwright \
+    youtube-transcript-api pyseto babel cython pydantic pydantic-settings \
+    patterns pytterns tqdm pyjokes pyfiglet cowsay clip torch pillow \
+    pyspark
+
+# Or install by category
+# Performance
 pip install orjson numexpr numpy
 
-# For web examples  
-pip install fastapi uvicorn starlette
+# Web & Async
+pip install fastapi uvicorn starlette playwright schedule
 
-# For database examples
-pip install pymongo requests
+# Database & APIs
+pip install pymongo requests openai youtube-transcript-api
 
-# For specific examples
-pip install pyseto babel cython pydantic patterns
+# Development & Debugging
+pip install snoop tqdm pyjokes pyfiglet cowsay
+
+# Security & Patterns
+pip install pyseto babel cython pydantic pydantic-settings patterns pytterns
 ```
+
+### Platform Notes
+- **Windows**: Some examples (like `cyton_fast_sum.pyx`) require Visual Studio Build Tools
+- **Linux/macOS**: Most examples work out of the box
+- **Playwright**: Requires browser installation (`playwright install chromium`)
+- **CLIP/PyTorch**: May require CUDA for GPU acceleration
 
 ## 🤝 Contributing
 
