@@ -17,21 +17,17 @@ dependencies = [
     "requests>=2.32.5",
     "schedule>=1.2.2",
     "snoop>=0.6.0",
-
     # Performance examples
     "orjson>=3.10.0",
     "numexpr>=2.10.0",
     "numpy>=2.1.0",
-
     # Web development
     "fastapi>=0.115.0",
     "uvicorn>=0.32.0",
     "starlette>=0.41.0",
     "playwright>=1.48.0",
-
     # Database & APIs
     "youtube-transcript-api>=0.6.0",
-
     # Security & Patterns
     "pyseto>=1.7.0",
     "babel>=2.16.0",
@@ -40,18 +36,15 @@ dependencies = [
     "pydantic-settings>=2.6.0",
     "patterns>=0.4.0",
     "pytterns>=0.1.0",
-
     # Utilities
     "tqdm>=4.67.0",
     "pyjokes>=0.6.0",
     "pyfiglet>=1.0.0",
     "cowsay>=6.0",
-
     # Image processing
     "clip>=1.0.0",
     "torch>=2.5.0",
     "pillow>=11.0.0",
-
     # PySpark
     "pyspark>=3.5.0",
 ]
