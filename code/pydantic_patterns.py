@@ -6,7 +6,7 @@ Master 12 essential Pydantic v2 patterns — validators, computed fields, discri
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-1. Baseline DTO that plays nicely with everything
+1. Baseline DTO ( DATA TRANSFER OBJECT) that plays nicely with everything
 Use a single “base” with sane defaults so every model serializes predictably.
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -74,7 +74,9 @@ def to_camel(s: str) -> str:
 
 
 class ApiModel(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+    model_config = ConfigDict(alias_generator=to_camel,
+                              populate_by_name=True,
+                              extra='forbid')
 
 class Product(ApiModel):
     product_id: int = Field(alias="productId")  # explicit if needed
@@ -107,3 +109,216 @@ try:
     Product.model_validate(bad)
 except ValidationError as exc:
     print("validation error (expected):", exc)
+
+"""    
+3) Field validators that do the boring things perfectly
+    v2 introduces @field_validator with mode='before'|'after'.
+"""
+
+from pydantic import BaseModel, field_validator
+
+class Email(BaseModel):
+    address: str
+
+    @field_validator('address', mode='before')
+    @classmethod
+    def normalize(cls, v: str) -> str:
+        v = v.strip().lower()
+        if '@' not in v:
+            raise ValueError('Invalid email')
+        return v
+
+try:
+    email = Email(address="srmitin!yahoo.com")
+except ValidationError as e:
+    # print the error message from the exception and exception type
+    print(f"validation error (expected): {e} ({type(e).__name__})")
+
+"""
+4) Cross-field sanity with model validators
+When one field depends on another, use @model_validator.
+"""
+
+from pydantic import BaseModel, model_validator
+
+class Window(BaseModel):
+    start: int
+    end: int
+
+    @model_validator(mode='after')
+    def check_order(self):
+        if self.end <= self.start:
+            raise ValueError('end must be > start')
+        return self
+
+try:
+    window = Window(start=10, end=5)
+except ValidationError as e:
+    print(f"validation error (expected): {e} ")
+
+"""
+5) Computed fields for “obvious” derivatives
+No need to store what you can derive.
+"""
+
+from pydantic import BaseModel, computed_field
+
+class Name(BaseModel):
+    first: str
+    last: str
+
+    @computed_field
+    @property
+    def display(self) -> str:
+        return f"{self.first.title()} {self.last.title()}"
+
+full_name = Name(first="john",last="doe")
+print("full_name.display:", full_name.display)  # "John Doe"
+
+print("Model:", full_name.model_dump())  # Model: {'first': 'john', 'last': 'doe', 'display': 'John Doe'}
+
+"""
+6) Serialization that respects clients (and you)
+Fine-tune output with field_serializer and model_dump.
+"""
+
+from datetime import datetime, timezone
+from pydantic import BaseModel, field_serializer
+
+class Event(BaseModel):
+    id: str
+    at: datetime
+
+    @field_serializer('at')
+    def iso8601(self, dt: datetime, _info):
+        return dt.astimezone(timezone.utc).isoformat()
+
+e = Event(id='a1', at=datetime.now())
+print (e.model_dump(by_alias=True, exclude_none=True))       # tuned output
+print (e.model_dump_json())                                   # fast JSON
+
+"""
+7) Discriminated unions that make APIs self-describing
+Model “one of many” payloads without brittle if/else jungles.
+"""
+from typing import Annotated, Union, Literal
+from pydantic import BaseModel, Field, TypeAdapter
+
+class Click(BaseModel):
+    kind: Literal['click']
+    x: int; y: int
+
+class Input(BaseModel):
+    kind: Literal['input']
+    value: str
+
+Event = Annotated[Union[Click, Input], Field(discriminator='kind')]
+
+# Define the adapter for the Event union
+event_adapter = TypeAdapter(Event)
+
+# Valid input for Click
+click_event = event_adapter.validate_python({"kind": "click", "x": 100, "y": 200})
+print(click_event)  # Click(kind='click', x=100, y=200)
+
+# Valid input for Input
+input_event = event_adapter.validate_python({"kind": "input", "value": "hello"})
+print(input_event)  # Input(kind='input', value='hello')
+
+"""
+8) TypeAdapter for validation without a model
+Validate arbitrary types (lists, primitives, nested dicts) on the fly.
+"""
+
+from typing import List
+from pydantic import TypeAdapter
+
+ta = TypeAdapter(List[int])
+nums = ta.validate_python(['1', 2, 3])    # → [1, 2, 3]
+json_ready = ta.dump_python(nums)         # fast serializer
+print ("json_ready:", json_ready)
+
+"""
+9) Settings from environment (clean, dry, testable)
+Pydantic v2’s BaseSettings makes it easy to load config from env vars or .env files.
+"""
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class AppSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix='APP_', env_file='.env')
+    db_url: str
+    debug: bool = False
+    cache_ttl: int = 300
+
+# APP_DB_URL=postgres://... python app.py
+try:
+    settings = AppSettings()  # env + .env merged, types parsed
+
+    print("Database URL:", settings.db_url)
+    print("Debug mode:", settings.debug)
+    print("Cache TTL:", settings.cache_ttl)
+except ValidationError as e:
+    print(f"Settings validation error: {e}")
+
+"""
+10) ORM interop without ceremony
+v2 replaces from_orm=True with from_attributes=True and model_validate.
+Pro tip: Use this to produce clean DTOs from ORM rows for your API layer — no leaky models.
+"""
+
+from pydantic import BaseModel, ConfigDict
+
+class User(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    email: str
+
+# SQLAlchemy row ( sa_row) with attributes `.id` and `.email`
+# u = User.model_validate(sa_row)
+
+"""
+11) Immutable value objects you can trust
+Some things should never change after creation — IDs, money, coordinates.
+"""
+
+from pydantic import BaseModel, ConfigDict
+
+class Money(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    amount: int          # cents
+    currency: str = 'USD'
+
+m = Money(amount=500)
+try:
+    m.amount = 600  # ❌ raises error (frozen)
+except ValidationError as e:
+    print(f"Validation error (expected): {e}")
+
+m2 = m.model_copy(update={'amount': 600})  # ✅ new instance
+
+print (m2)  # Money(amount=600, currency='USD')
+
+"""
+12) Validate function calls at the boundary
+@validate_call guards service functions like a bouncer at 2 AM.
+When to use: API layer, CLI entrypoints, cron tasks — anywhere untrusted data enters your system.
+"""
+
+from pydantic import validate_call
+from typing import Annotated
+from pydantic import Field
+
+@validate_call
+def charge(user_id: int, amount: Annotated[float, Field(gt=0)]):
+    # if we're here, inputs are clean
+    return {'ok': True}
+
+charge(42, '9.99')  # ✅ becomes 9.99 (coerced & validated)
+try:
+    charge(42, '-5')  # ❌ raises ValidationError (amount must be > 0)
+except ValidationError as e:
+    print(f"Validation error (expected): {e}")
+# charge('u1', -5)  # ❌ raises ValidationError
+
+
