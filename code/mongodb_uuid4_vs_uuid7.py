@@ -29,7 +29,7 @@ async def main():
     collection_uuid4 = db.testUuid4
     collection_uuid7 = db.testUuid7
 
-    collection4_exists = False
+    #collection4_exists = False
     if not collection4_exists:
         # Create  indexes on uuid field
         await collection_uuid4.create_index([("uuid")])
@@ -57,6 +57,8 @@ async def main():
         # Collection exists, get uuids from existing documents (assuming they have uuid field)
         uuids = []
         async for doc in collection_uuid4.find({}, {"uuid": 1}):
+            uuids.append(doc["uuid"])
+        async for doc in collection_uuid7.find({}, {"uuid": 1}):
             uuids.append(doc["uuid"])
 
     # Run 1000 queries on both collections
@@ -88,7 +90,7 @@ async def main():
 
     print(f"Average query time with uuid4: {avg_uuid4:.6f} seconds")
     print(f"Average query time with uuid7: {avg_uuid7:.6f} seconds")
-    print(f"Performance difference: {avg_uuid7 / avg_uuid4:.2f}x faster with uuid7" if avg_uuid4 < avg_uuid7 else f"Performance difference: {avg_uuid4 / avg_uuid7:.2f}x faster with uuid4")
+    print(f"Performance difference: {avg_uuid7 / avg_uuid4:.2f}x faster with uuid7" if avg_uuid4 > avg_uuid7 else f"Performance difference: {avg_uuid4 / avg_uuid7:.2f}x faster with uuid4")
 
     # Close the client
     await client.close()
