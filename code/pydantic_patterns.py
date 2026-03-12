@@ -322,3 +322,12 @@ except ValidationError as e:
 # charge('u1', -5)  # ❌ raises ValidationError
 
 
+"""
+Use Model Rebuilds Thoughtfully With Forward References
+Circular relationships aren’t common, but when they occur in domain models, they’re extremely confusing unless you have the right tools.
+"""
+
+class Node(BaseModel):
+    child: "Node | None" = None         # forward reference to itself, signaled by using "" around the type
+
+Node.model_rebuild()                    # resolves the forward reference after the class is fully defined
